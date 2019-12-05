@@ -14,7 +14,7 @@ type BusinessError struct {
 }
 
 func (be BusinessError) Error() string {
-	return fmt.Sprintf("[%s] %s", be.Code, be.Msg)
+	return fmt.Sprintf("[%d] %s", be.Code, be.Msg)
 }
 
 // create a new business error

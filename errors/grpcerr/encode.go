@@ -17,8 +17,16 @@ func EncodeWrapf(err error, format string, args ...interface{}) error {
 	}
 
 	switch ex := err.(type) {
+	case mserror.BusinessError:
+		return status.New(codes.Code(ex.Code), ex.Msg).Err()
 	case *mserror.BusinessError:
 		return status.New(codes.Code(ex.Code), ex.Msg).Err()
+	case mserror.RpcError:
+		wrap := status.New(codes.Code(ex.Code), ex.Msg).Err()
+		if ex.Code < uint32(mserror.MinimalBusinessCode) {
+			wrap = errors.Wrapf(wrap, format, args)
+		}
+		return wrap
 	case *mserror.RpcError:
 		wrap := status.New(codes.Code(ex.Code), ex.Msg).Err()
 		if ex.Code < uint32(mserror.MinimalBusinessCode) {

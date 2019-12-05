@@ -20,7 +20,27 @@ func EncodeWrapf(err error, format string, args ...interface{}) error {
 	}
 
 	switch ex := err.(type) {
+	case mserror.BusinessError:
+		return &gqlerror.Error{
+			Message: ex.Error(),
+			Extensions: map[string]interface{}{
+				GrpcDefaultErrCodeKey: ex.Code,
+				GrpcDefaultErrMsgKey:  ex.Msg,
+			},
+		}
 	case *mserror.BusinessError:
+		return &gqlerror.Error{
+			Message: ex.Error(),
+			Extensions: map[string]interface{}{
+				GrpcDefaultErrCodeKey: ex.Code,
+				GrpcDefaultErrMsgKey:  ex.Msg,
+			},
+		}
+	case mserror.RpcError:
+		if ex.Code < uint32(mserror.MinimalBusinessCode) {
+			return gqlerror.Errorf(format, args)
+		}
+
 		return &gqlerror.Error{
 			Message: ex.Error(),
 			Extensions: map[string]interface{}{
