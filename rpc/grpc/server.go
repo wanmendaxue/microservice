@@ -53,7 +53,7 @@ func newErrorHandlingUnaryServerInterceptor() grpcpkg.UnaryServerInterceptor {
 			err = status.Error(codes.Code(c), m)
 		} else if ex, ok := err.(interface{ Demand() string }); ok {
 			msg := ex.Demand()
-			logrus.WithFields(logrus.Fields{"error": err, "type": "demand"}).Debugf("service response demand error: [%d] %s", msg)
+			logrus.WithFields(logrus.Fields{"error": err, "type": "demand"}).Debugf("service response demand error: %s", msg)
 			err = status.Error(codes.InvalidArgument, msg)
 		} else {
 			logrus.WithFields(logrus.Fields{"error": err, "type": "general"}).Debugf("service response general error: %+v", err)
