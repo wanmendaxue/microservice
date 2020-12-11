@@ -23,6 +23,7 @@ func NewGraphqlServer(es graphql.ExecutableSchema) *handler.Server {
 					err.Message = inner.Error()
 					err.Extensions = map[string]interface{}{
 						"code": 401,
+						"msg": inner.Error(),
 					}
 					logrus.Debugf("unauthenticated: %+v", e)
 				} else if ex, ok := inner.(interface{ Business() (uint32, string) }); ok {
