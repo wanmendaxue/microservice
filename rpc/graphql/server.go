@@ -14,35 +14,34 @@ var RequireAuthenticatedError = errors.New("operation requires authenticated")
 func NewGraphqlServer(es graphql.ExecutableSchema) *handler.Server {
 	h := handler.NewDefaultServer(es)
 	h.SetErrorPresenter(func(ctx context.Context, e error) *gqlerror.Error {
-		formattedErr := e
-		if formattedErr != nil {
-			if formattedErr == RequireAuthenticatedError {
-				formattedErr = &gqlerror.Error{
-					Message: e.Error(),
-					Extensions: map[string]interface{}{
+		err := graphql.DefaultErrorPresenter(ctx, e)
+		if err != nil {
+			inner := err.Unwrap()
+
+			if inner != nil {
+				if inner == RequireAuthenticatedError {
+					err.Message = inner.Error()
+					err.Extensions = map[string]interface{}{
 						"code": 401,
-					},
-				}
-			} else if _, ok := e.(*gqlerror.Error); ok {
-				// if err is GQL error object, then do nothing
-				logrus.WithFields(logrus.Fields{"error": e, "type": "gql-error"}).Debugf("service response gql error: %v", e)
-			} else if ex, ok := e.(interface{ Business() (uint32, string) }); ok {
-				c, m := ex.Business()
-				logrus.WithFields(logrus.Fields{"error": e, "type": "business"}).Debugf("service response business error: [%d] %s", c, m)
-				formattedErr = &gqlerror.Error{
-					Message: e.Error(),
-					Extensions: map[string]interface{}{
+					}
+					logrus.Debugf("unauthenticated: %+v", e)
+				} else if ex, ok := inner.(interface{ Business() (uint32, string) }); ok {
+					c, m := ex.Business()
+					logrus.Debugf("business error : [%d] %s", c, m)
+					err.Message = inner.Error()
+					err.Extensions = map[string]interface{}{
 						"code": c,
 						"msg":  m,
-					},
+					}
+				}  else {
+					logrus.Debugf("general error  :  %+v", e)
 				}
-			} else if ex, ok := e.(interface{ Demand() string }); ok {
-				logrus.WithFields(logrus.Fields{"error": e, "type": "demand"}).Debugf("service response demand error: %s", ex.Demand())
 			} else {
-				logrus.WithFields(logrus.Fields{"error": e, "type": "general"}).Debugf("service response general error: %+v", e)
+				logrus.Errorf("error          : %v", e)
 			}
 		}
-		return graphql.DefaultErrorPresenter(ctx, formattedErr)
+
+		return err
 	})
 
 	return h
