@@ -19,11 +19,8 @@ func NewGrpcServer() *grpcpkg.Server {
 			PermitWithoutStream: true,
 		}),
 		grpcpkg.KeepaliveParams(keepalive.ServerParameters{
-			MaxConnectionIdle:     5 * time.Minute,
-			MaxConnectionAge:      30 * time.Second,
-			MaxConnectionAgeGrace: 10 * time.Second,
-			Time:                  30 * time.Second,
-			Timeout:               5 * time.Second,
+			Time:    10 * time.Minute, // because linux ipvs default timeout is 900s
+			Timeout: 5 * time.Second,
 		}),
 		grpcpkg.MaxRecvMsgSize(1024*1024*100),
 		grpcpkg.MaxSendMsgSize(1024*1024*100),

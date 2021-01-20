@@ -5,6 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/wanmendaxue/microservice/errors"
 	grpcpkg "google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
 	"time"
 )
@@ -14,6 +15,11 @@ func Dial(addr string, dialOption grpcpkg.DialOption) (*grpcpkg.ClientConn, erro
 		addr,
 		dialOption,
 		grpcpkg.WithUnaryInterceptor(newErrorHandlingUnaryClientInterceptor()),
+		grpcpkg.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:                10 * time.Minute,
+			Timeout:             5 * time.Second,
+			PermitWithoutStream: true,
+		}),
 	)
 }
 
@@ -33,4 +39,3 @@ func newErrorHandlingUnaryClientInterceptor() grpcpkg.UnaryClientInterceptor {
 		return err
 	}
 }
-
