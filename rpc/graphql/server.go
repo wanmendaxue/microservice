@@ -41,7 +41,7 @@ func NewGraphqlServer(es graphql.ExecutableSchema, prod bool) *handler.Server {
 						msg := "service unavailable currently"
 						err.Message = msg
 						err.Extensions = map[string]interface{}{
-							"code": 000,
+							"code": 500,
 							"msg": msg,
 						}
 					}
