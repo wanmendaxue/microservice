@@ -11,7 +11,7 @@ import (
 
 var RequireAuthenticatedError = errors.New("operation requires authenticated")
 
-func NewGraphqlServer(es graphql.ExecutableSchema) *handler.Server {
+func NewGraphqlServer(es graphql.ExecutableSchema, prod bool) *handler.Server {
 	h := handler.NewDefaultServer(es)
 	h.SetErrorPresenter(func(ctx context.Context, e error) *gqlerror.Error {
 		err := graphql.DefaultErrorPresenter(ctx, e)
@@ -36,6 +36,15 @@ func NewGraphqlServer(es graphql.ExecutableSchema) *handler.Server {
 					}
 				}  else {
 					logrus.Debugf("general error  :  %+v", e)
+
+					if prod {
+						msg := "service unavailable currently"
+						err.Message = msg
+						err.Extensions = map[string]interface{}{
+							"code": 000,
+							"msg": msg,
+						}
+					}
 				}
 			} else {
 				logrus.Errorf("error          : %v", e)
