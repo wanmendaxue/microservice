@@ -5,13 +5,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	errors2 "github.com/wanmendaxue/microservice/errors"
 	"log"
+
+	errors2 "github.com/wanmendaxue/microservice/errors"
+
+	"net"
 
 	"github.com/sirupsen/logrus"
 	"github.com/wanmendaxue/microservice/demo/pkg/test"
 	"github.com/wanmendaxue/microservice/rpc/grpc"
-	"net"
 )
 
 func main() {
@@ -31,15 +33,16 @@ func main() {
 	}
 }
 
-
 func NewTestServer() test.TestServiceServer {
 	return &testServer{}
 }
 
-type testServer struct {}
+type testServer struct {
+	test.UnimplementedTestServiceServer
+}
 
 func (t testServer) Hello(ctx context.Context, req *test.HelloRequest) (*test.HelloReply, error) {
-	return nil, e3()
+	return nil, e2()
 }
 
 func e1() error {
@@ -52,8 +55,4 @@ func e1() error {
 
 func e2() error {
 	return errors2.NewBusinessError(111222, "business err test")
-}
-
-func e3() error {
-	return errors2.NewDemandError("on demand")
 }
