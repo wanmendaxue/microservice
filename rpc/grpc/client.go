@@ -2,12 +2,13 @@ package grpc
 
 import (
 	"context"
+	"time"
+
 	"github.com/sirupsen/logrus"
 	"github.com/wanmendaxue/microservice/errors"
 	grpcpkg "google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
-	"time"
 )
 
 type ErrorFormatter func(code uint32, msg string) string
@@ -22,6 +23,10 @@ func DialWithErrorFormatter(addr string, dialOption grpcpkg.DialOption, errorFor
 	return grpcpkg.Dial(
 		addr,
 		dialOption,
+		grpcpkg.WithDefaultCallOptions(
+			grpcpkg.MaxCallRecvMsgSize(1024*1024*100),
+			grpcpkg.MaxCallSendMsgSize(1024*1024*100),
+		),
 		grpcpkg.WithUnaryInterceptor(newErrorHandlingUnaryClientInterceptor(errorFormatter)),
 		grpcpkg.WithKeepaliveParams(keepalive.ClientParameters{
 			Time:                10 * time.Minute,
