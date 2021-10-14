@@ -20,7 +20,7 @@ func NewGrpcServer() *grpcpkg.Server {
 		}),
 		grpcpkg.KeepaliveParams(keepalive.ServerParameters{
 			Time:    10 * time.Minute, // because linux ipvs default timeout is 900s
-			Timeout: 5 * time.Second,
+			Timeout: 120 * time.Second,
 		}),
 		grpcpkg.MaxRecvMsgSize(1024*1024*100),
 		grpcpkg.MaxSendMsgSize(1024*1024*100),
@@ -40,7 +40,7 @@ func newErrorHandlingUnaryServerInterceptor() grpcpkg.UnaryServerInterceptor {
 
 		t := time.Now()
 		resp, err = handler(ctx, req)
-		logrus.Infof("%s processed taken %d millis", info.FullMethod, time.Since(t).Milliseconds())
+		logrus.Debugf("%s processed taken %d millis", info.FullMethod, time.Since(t).Milliseconds())
 
 		if err != nil {
 			if _, ok := err.(interface{ GRPCStatus() *status.Status }); ok {
